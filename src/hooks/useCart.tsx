@@ -46,15 +46,27 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         return;
       }
       
-      const productFound = cart.find(product => product.id === productId);
+      const productFound = cart.find(el => el.id === product.id);
       
       if (!productFound) {
+        product.amount = 1;
         const newProducts = [...cart, product];
         
         const cartStorage = JSON.stringify(newProducts);
         localStorage.setItem('@RocketShoes:cart', cartStorage);
 
         setCart(newProducts);
+      } else {
+        const productIndex = cart.findIndex(el => el.id === product.id);
+        
+        productFound.amount = productFound.amount + 1;
+
+        const newCart = [...cart];
+        newCart[productIndex] = productFound;
+
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart));
+
+        setCart(newCart);
       }
 
     } catch(e) {
