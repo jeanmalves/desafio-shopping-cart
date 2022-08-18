@@ -113,11 +113,11 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
         const productIndex = cart.findIndex(item => item.id === productFound.id);
         
-        const newCart = [...cart];
-        newCart[productIndex] = productFound;
+        const updatedCart = [...cart];
+        updatedCart[productIndex] = productFound;
 
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart));  
-        setCart(newCart);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));  
+        setCart(updatedCart);
       }
     } catch {
       toast.error('Erro na alteração de quantidade do produto');
