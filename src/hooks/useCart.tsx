@@ -38,37 +38,33 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const addProduct = async (productId: number) => {
     try {
-      const product = await api.get<Product>(`/products/${productId}`).then((response) => response.data);
+      const updatedCart = [...cart];
+
+      const productExists = updatedCart.find(product => product.id === productId);
+
       const stock = await api.get<Stock>(`stock/${productId}`).then((response) => response.data);
-      
-      if(stock && stock.amount <= 0) {
+      const amount = productExists ? productExists.amount + 1 : 1;
+
+      if(stock.amount < amount) {
         toast.error('Quantidade solicitada fora de estoque');
         return;
       }
-      
-      const productFound = cart.find(el => el.id === product.id);
-      
-      if (!productFound) {
-        product.amount = 1;
-        const newProducts = [...cart, product];
-        
-        const cartStorage = JSON.stringify(newProducts);
-        localStorage.setItem('@RocketShoes:cart', cartStorage);
 
-        setCart(newProducts);
+      if (productExists) {
+        productExists.amount = amount;
+        
       } else {
-        const productIndex = cart.findIndex(el => el.id === product.id);
-        
-        productFound.amount = productFound.amount + 1;
+        const product =  await api.get<Product>(`/products/${productId}`).then((response) => response.data);
+        const newProduct = {
+          ...product,
+          amount
+        }
 
-        const newCart = [...cart];
-        newCart[productIndex] = productFound;
-
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart));
-
-        setCart(newCart);
+        updatedCart.push(newProduct);
       }
-
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));
+      
+      setCart(updatedCart);
     } catch(e) {
       toast.error('Erro na adição do produto');
     }
@@ -76,7 +72,14 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      const newCart = cart.filter(product =>  product.id !== productId);
+      const productFound = cart.find(product => product.id === productId);
+
+      if (!productFound) {
+        toast.error('Erro na remoção do produto');
+        return;
+      }
+      
+      const newCart = cart.filter(product =>  product.id !== productFound.id);
 
       localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart));  
 
